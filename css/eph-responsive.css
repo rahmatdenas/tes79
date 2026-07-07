@@ -80,7 +80,11 @@
     touch-action: none;
     cursor: grab;
     flex-shrink: 0; /* Header jangan sampai menyusut */
+  height: 56px;  
+    box-sizing: border-box;
+    overflow: hidden;
   }
+
 
   #branding p {
     margin: 0 0 5px 0;
