@@ -41,23 +41,21 @@ function renderMapAndPanel() {
     // ---------------------------------------------------------
     // 1. RENDER KONTEN PANEL SAMPING (Sesuai hierarki yang diminta)
     // ---------------------------------------------------------
-  let panelHtml = `
+let panelHtml = `
       <div class="timeline-item" id="item-${index}">
         
-        <h2 style="margin-top: 0; color: #b30000;">${record.formattedDate}</h2>
+        <h2 class="timeline-date">${record.formattedDate}</h2>
         
         ${record.imageUrl ? `
-        <figure style="float: right; width: 50%; margin: 0 0 10px 15px; padding: 0;">
-          <img src="${record.imageUrl}" alt="${record.locationName}" style="width: 100%; border-radius: 4px; border: 2px solid #eee;">
+        <figure class="timeline-figure">
+          <img src="${record.imageUrl}" alt="${record.locationName}">
         </figure>
         ` : ''}
         
         <div class="location-desc">
-          <p style="margin: 0 0 5px 0;"><strong>${record.locationName}</strong></p>
+          <p class="location-name"><strong>${record.locationName}</strong></p>
           ${record.lat && record.lon ? `
-          <p style="margin: 0; font-size: 0.85em; color: #666; font-family: monospace;">
-            Koordinat: ${record.lat.toFixed(4)}, ${record.lon.toFixed(4)}
-          </p>
+          <p class="coord-text">Koordinat: ${record.lat.toFixed(4)}, ${record.lon.toFixed(4)}</p>
           ` : ''}
         </div>
 
@@ -65,19 +63,17 @@ function renderMapAndPanel() {
     `;
     detailsContainer.innerHTML += panelHtml;
 
-    // ---------------------------------------------------------
     // 2. RENDER MARKER & LEAFLET POPUP
-    // ---------------------------------------------------------
     if (record.lat && record.lon) {
       let marker = L.marker([record.lat, record.lon]).addTo(Map);
       markerBounds.push([record.lat, record.lon]);
       
-      // Popup UI yang juga selaras
+      // Popup UI (Bersih dari CSS)
       let popupContent = `
-        <div style="text-align:center; min-width: 160px;">
-          ${record.imageUrl ? `<img src="${record.imageUrl}" style="width:100%; max-width:200px; border-radius:4px; margin-bottom:8px;"><br>` : ''}
-          <strong style="font-size:1.1em; display:block; margin-bottom:4px;">${record.locationName}</strong>
-          <span style="color:#b30000; font-weight:bold; font-size:0.9em;">${record.formattedDate}</span>
+        <div class="custom-popup">
+          ${record.imageUrl ? `<img src="${record.imageUrl}"><br>` : ''}
+          <strong class="popup-title">${record.locationName}</strong>
+          <span class="popup-date">${record.formattedDate}</span>
         </div>
       `;
       marker.bindPopup(popupContent);
