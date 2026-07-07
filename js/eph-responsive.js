@@ -24,7 +24,7 @@ function getExpandedY() {
 
 function getCollapsedY() {
   // Ambil tinggi asli header. Jika karena satu hal nilainya 0, pasang fallback 56 sesuai ukuran CSS Anda
-  var headerHeight = (header && header.offsetHeight > 0) ? header.offsetHeight : 56;
+  var headerHeight = (header && header.offsetHeight > 0) ? header.offsetHeight : 41;
   
   // RUMUS SAKTI: Tinggi total layar aktif dikurangi tinggi header. 
   // Ini menjamin top panel akan berhenti pas di bawah layar (menyisakan headernya saja).
