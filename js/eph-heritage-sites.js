@@ -39,6 +39,7 @@ function renderMapAndPanel() {
   let jedaScroll = null;
   let jedaAutoScroll = null;
   let indexAktif = '-1';
+  let kandidatIndexAkt
 
   // 1. RAKIT KONTEN HTML PANEL
   TimelineRecords.forEach((record, index) => {
@@ -126,50 +127,53 @@ marker.on('click', function() {
   // 4. FITUR: SCROLLTELLING DENGAN INTERSECTION OBSERVER (Performa Juara!)
   // 4. FITUR: SCROLLTELLING SUPER RINGAN (Optimal untuk HP Spek Rendah)
 let observer = new IntersectionObserver((entries) => {
-    
     if (detailsContainer.classList.contains('sedang-auto-scroll')) return;
 
-    // Saring laporan, HANYA ambil H2 yang sedang menyentuh kawat jebakan
     let yangMenyentuh = entries.filter(e => e.isIntersecting);
-    
-    // Jika tidak ada yang menyentuh, hentikan proses
     if (yangMenyentuh.length === 0) return;
 
-    // Jika kebetulan Cina dan Filipina menyentuh bersamaan (karena div kecil),
-    // kita selalu ambil elemen yang posisinya paling bawah di laporan (yang terbaru masuk)
     let entryTerpilih = yangMenyentuh[yangMenyentuh.length - 1];
     
-    let parentDiv = entryTerpilih.target.closest('.timeline-item');
-    let indexStr = parentDiv.getAttribute('data-index');
+    // Sesuaikan ini tergantung Anda memantau .timeline-item atau h2
+    let parentDiv = entryTerpilih.target.closest('.timeline-item'); 
     
-    // KUNCI 3: Pengecekan Memori
-    // Jika H2 yang menyentuh masih lokasi yang sama dengan yang aktif di peta, abaikan!
-    if (indexAktif === indexStr) return;
-    
-    // Catat lokasi baru ini ke dalam memori
-    indexAktif = indexStr;
-    let indexAngka = parseInt(indexStr);
-
-    clearTimeout(jedaScroll);
-    jedaScroll = setTimeout(() => {
-      let targetRecord = TimelineRecords[indexAngka];
-      if (targetRecord && targetRecord.marker && !targetRecord.marker.isPopupOpen()) {
-        targetRecord.marker.openPopup();
-        Map.panTo(targetRecord.marker.getLatLng());
-      }
-    }, 350); 
+    // Cukup catat ke memori sementara, JANGAN jalankan timeout di sini
+    kandidatIndexAktif = parentDiv.getAttribute('data-index');
     
   }, {
     root: detailsContainer,
-    // Kawat dipersempit ekstrem: Hanya setebal 5% bagian paling atas
-    rootMargin: '0px 0px -95% 0px', 
+    rootMargin: '0px 0px -80% 0px', 
     threshold: 0
   });
 
-  // HANYA pasang sensor di judul H2
-  document.querySelectorAll('.timeline-date').forEach(judul => {
-    observer.observe(judul);
+  // Pasang sensor (Sesuaikan dengan elemen target Anda)
+  document.querySelectorAll('.timeline-date').forEach(item => {
+    observer.observe(item);
   });
+
+  // ==========================================
+  // 2. SCROLL EVENT UNTUK DETEKSI BERHENTI TOTAL
+  // ==========================================
+detailsContainer.addEventListener('scroll', () => {
+    
+    if (detailsContainer.classList.contains('sedang-auto-scroll')) return;
+    
+    clearTimeout(jedaScroll);
+    
+    jedaScroll = setTimeout(() => {
+      if (kandidatIndexAktif !== null && kandidatIndexAktif !== indexAktif) {
+        indexAktif = kandidatIndexAktif;
+        let indexAngka = parseInt(indexAktif);
+        let targetRecord = TimelineRecords[indexAngka];
+        
+        if (targetRecord && targetRecord.marker && !targetRecord.marker.isPopupOpen()) {
+          targetRecord.marker.openPopup();
+          Map.panTo(targetRecord.marker.getLatLng());
+        }
+      }
+    }, 300); 
+
+  }, { passive: true });
 
   // Matikan animasi loading dan tampilkan panel details
   document.getElementById('loading').style.display = 'none';
