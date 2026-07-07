@@ -1,93 +1,70 @@
 @media (max-width: 800px) {
-
   html, body {
     height: 100%;
     overflow: hidden;
   }
 
   body {
+    display: block; /* Matikan flex bawaan desktop */
     position: relative;
   }
 
-  #panel, #map {
+  #map {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1;
+  }
+
+  #sidebar {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; /* KUNCI: Biarkan peta di belakang bisa disentuh */
+    z-index: 500;
+  }
+
+  nav {
+    pointer-events: auto;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px; /* Tinggi navigasi */
+    background: #822; 
+    z-index: 10;
+    display: flex;
+    align-items: center;
+  }
+
+  nav ul {
+    width: 100%;
+    margin: 0 20px; /* Buang margin bawah lama agar teks di tengah vertikal */
+  }
+
+  #panel {
+    pointer-events: auto;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    flex: none;
-  }
-
-  #map {
-    z-index: 1;
-  }
-
-#panel {
-    z-index: 500;
+    /* Tinggi panel tepat dipotong navigasi agar tidak tertimpa */
+    height: calc(100% - 50px);
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    
-    /* TAMBAHAN KUNCI: */
-    box-sizing: border-box;
-  }
-
-  #panel.eph-dragging {
-    transition: none;
-  }
-
-  /* ---------- Modifikasi Header (#branding) Menjadi Pegangan ---------- */
-  #branding {
-    position: relative;
-    touch-action: none;   /* Cegah browser scroll halaman saat header didrag */
-    cursor: grab;
-    border-radius: 16px 16px 0 0;
-    padding-right: 40px;  /* Ruang agar teks tidak menabrak ikon panah */
-  }
-
-  #branding:active {
-    cursor: grabbing;
-  }
-
-  /* Desain Ikon Panah (Injeksi JS) */
-  #panel-toggle {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    margin-top: -2px;     /* Penyesuaian presisi vertikal */
-    transform: translateY(-50%) rotate(0deg);
-    font-size: 18px;
-    color: #fff;
+    background: #822;
     transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
-  /* ---------- Branding & Navigasi Lebih Ringkas ---------- */
-  #branding p {
-    margin-top: 5px; /* Sedikit disesuaikan agar proporsional */
-    font-size: 11px;
+  /* Hilangkan ::after (bayangan) dari solusi sebelumnya */
+  #panel::after {
+    display: none; 
   }
 
-  #branding h1 {
-    font-size: 20px;
-    margin-bottom: 5px;
-  }
-
-  nav ul {
-    margin: 0 20px 10px 20px;
-  }
-
-  /* ---------- Panel Detail ---------- */
-  #details,
-  #about {
-    padding: 16px;
-    /* Pastikan bagian yang bisa di-scroll tidak mentok */
-    height: calc(100% - 130px); 
+  #details, #about {
+    background: #fff;
+    flex: 1;
+    height: auto;
     overflow-y: auto;
-    /* PERBAIKAN KUNCI: */
-    flex: 1;          /* Biarkan sistem Flexbox yang menghitung sisa ruangnya otomatis */
-    height: auto;     /* Hapus aturan height: calc(100% - 130px) lama yang tidak akurat */
-    overflow-y: auto; /* Pastikan scroll tetap aktif di dalam sini */
+    padding: 16px;
   }
 
   .timeline-figure {
