@@ -127,35 +127,46 @@ marker.on('click', function() {
   // 4. FITUR: SCROLLTELLING SUPER RINGAN (Optimal untuk HP Spek Rendah)
 let observer = new IntersectionObserver((entries) => {
     
-    // Jika panel sedang bergulir karena klik marker, matikan fungsi ini total
     if (detailsContainer.classList.contains('sedang-auto-scroll')) return;
 
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        let parentDiv = entry.target.closest('.timeline-item');
-        let index = parentDiv.getAttribute('data-index');
-        let targetRecord = TimelineRecords[index];
-        
-        // KUNCI PERBAIKAN 2: Teknik Debouncing (Ide Anda)
-        // Batalkan perintah buka popup sebelumnya jika pengguna masih asyik scroll
-        clearTimeout(jedaScroll);
-        
-        // Buat perintah baru yang akan dieksekusi HANYA jika scroll berhenti selama 350ms
-        jedaScroll = setTimeout(() => {
-          if (targetRecord && targetRecord.marker && !targetRecord.marker.isPopupOpen()) {
-            targetRecord.marker.openPopup();
-            Map.panTo(targetRecord.marker.getLatLng());
-          }
-        }, 350); 
+    // Saring laporan, HANYA ambil H2 yang sedang menyentuh kawat jebakan
+    let yangMenyentuh = entries.filter(e => e.isIntersecting);
+    
+    // Jika tidak ada yang menyentuh, hentikan proses
+    if (yangMenyentuh.length === 0) return;
+
+    // Jika kebetulan Cina dan Filipina menyentuh bersamaan (karena div kecil),
+    // kita selalu ambil elemen yang posisinya paling bawah di laporan (yang terbaru masuk)
+    let entryTerpilih = yangMenyentuh[yangMenyentuh.length - 1];
+    
+    let parentDiv = entryTerpilih.target.closest('.timeline-item');
+    let indexStr = parentDiv.getAttribute('data-index');
+    
+    // KUNCI 3: Pengecekan Memori
+    // Jika H2 yang menyentuh masih lokasi yang sama dengan yang aktif di peta, abaikan!
+    if (indexAktif === indexStr) return;
+    
+    // Catat lokasi baru ini ke dalam memori
+    indexAktif = indexStr;
+    let indexAngka = parseInt(indexStr);
+
+    clearTimeout(jedaScroll);
+    jedaScroll = setTimeout(() => {
+      let targetRecord = TimelineRecords[indexAngka];
+      if (targetRecord && targetRecord.marker && !targetRecord.marker.isPopupOpen()) {
+        targetRecord.marker.openPopup();
+        Map.panTo(targetRecord.marker.getLatLng());
       }
-    });
+    }, 350); 
+    
   }, {
     root: detailsContainer,
-    rootMargin: '0px 0px -90% 0px', 
+    // Kawat dipersempit ekstrem: Hanya setebal 5% bagian paling atas
+    rootMargin: '0px 0px -95% 0px', 
     threshold: 0
   });
 
-  // HANYA pasang sensor di judul H2. Sangat menghemat beban memori browser!
+  // HANYA pasang sensor di judul H2
   document.querySelectorAll('.timeline-date').forEach(judul => {
     observer.observe(judul);
   });
