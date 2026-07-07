@@ -107,7 +107,7 @@
 #details,
   #about {
     background: #fff;
-    padding-top: 5px;
+    margin-bottom: 20px;
     flex: 1;          
     overflow-y: auto; 
     
