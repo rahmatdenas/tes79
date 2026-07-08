@@ -146,7 +146,7 @@ function renderMapAndPanel() {
     }
   }
 
-  let playBtn = document.getElementById('play-btn');
+let playBtn = document.getElementById('play-btn');
   if (playBtn) {
     let newPlayBtn = playBtn.cloneNode(true);
     playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
@@ -154,17 +154,40 @@ function renderMapAndPanel() {
     
     playBtn.addEventListener('click', function(e) {
       e.stopPropagation();
+      
       if (isPlaying) {
         hentikanPlay(); 
       } else {
+        // CEK POSISI: Apakah kita sedang berada di div terakhir?
+        let curIdx = parseInt(indexAktif === '-1' ? '-1' : indexAktif);
+        let apakahDiUjung = curIdx >= TimelineRecords.length - 1;
+
+        // 1. Nyalakan status Play secara visual dan audio
         isPlaying = true;
         playBtn.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+        
         if (bgAudio) {
           bgAudio.play().catch(function(error) {
             console.log("Browser menahan pemutaran otomatis lagu: ", error); 
           });
         }
-        jalankanAnimasiSatuLangkah(); 
+
+        // 2. Logika Pencegah Glitch
+        if (apakahDiUjung) {
+          // JIKA DI TERAKHIR: Kembalikan ke pengantar secara manual, 
+          // tanpa memanggil animasi instan yang berisiko mematikan sistem.
+          indexAktif = '-1'; 
+          Map.closePopup(); 
+          if (markerBounds.length > 0) {
+            Map.flyToBounds(markerBounds, dapatkanOpsiBounds(true)); 
+          }
+          gulirkanPanelLewatKode(0);
+        } else {
+          // JIKA DI TENGAH: Langsung eksekusi 1 langkah animasi secara instan
+          jalankanAnimasiSatuLangkah(); 
+        }
+        
+        // 3. Setel mesin waktu untuk langkah selanjutnya secara konsisten
         clearInterval(playInterval); 
         playInterval = setInterval(jalankanAnimasiSatuLangkah, 3000); 
       }
@@ -316,9 +339,12 @@ function renderMapAndPanel() {
 }
 
 function fokusKeMarker(latlng, keepCurrentZoom = false, durasi = 1.2) {
+  // Jika dari klik marker langsung (true), gunakan zoom saat ini. Jika false, paksa ke 14.
   let targetZoom = keepCurrentZoom ? Map.getZoom() : 14;
+  
   let koordinatAkhir = latlng;
 
+  // JIKA MOBILE: Geser kamera ke bawah 40px agar posisi marker naik ke atas
   if (window.innerWidth <= 800) {
     let targetPoint = Map.project(latlng, targetZoom);
     targetPoint.y += 40; 
@@ -328,14 +354,27 @@ function fokusKeMarker(latlng, keepCurrentZoom = false, durasi = 1.2) {
   let currentCenter = Map.getCenter();
   let currentZoom = Map.getZoom();
 
+  // Logika pencegah shaky / getar jika posisi sudah pas
   if (currentZoom === targetZoom && currentCenter.distanceTo(koordinatAkhir) < 5) {
     return; 
   }
 
-  Map.flyTo(koordinatAkhir, targetZoom, {
-    animate: true,
-    duration: durasi
-  });
+  // --------------------------------========================================
+  // KUNCI PERBAIKAN: JIKA ZOOM SAMA, LUNCURKAN SECARA LURUS (ANTI MEMBAL 2X)
+  // --------------------------------========================================
+  if (currentZoom === targetZoom) {
+    // panTo akan menggeser peta dalam 1 gerakan lurus langsung ke target kustom 40px
+    Map.panTo(koordinatAkhir, {
+      animate: true,
+      duration: durasi
+    });
+  } else {
+    // Jika tingkat zoom berbeda, tetap gunakan flyTo agar efek terbangnya bekerja sinematik
+    Map.flyTo(koordinatAkhir, targetZoom, {
+      animate: true,
+      duration: durasi
+    });
+  }
 }
 
 function formatWikidataDate(dateString, precision) {
