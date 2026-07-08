@@ -139,7 +139,7 @@ function renderMapAndPanel() {
       
       let targetItem = document.getElementById(`item-${nextIdx}`);
       if (targetItem) {
-        let scrollPos = targetItem.offsetTop - detailsContainer.offsetTop; 
+let scrollPos = targetItem.offsetTop;
         if (scrollPos < 0) scrollPos = 0;
         gulirkanPanelLewatKode(scrollPos);
       }
@@ -264,7 +264,7 @@ let playBtn = document.getElementById('play-btn');
           fokusKeMarker(targetRecord.marker.getLatLng(), false); 
           indexAktif = indexStr; 
 
-          let scrollPos = parentDiv.offsetTop - detailsContainer.offsetTop; 
+let scrollPos = parentDiv.offsetTop;
           if (scrollPos < 0) scrollPos = 0;
           gulirkanPanelLewatKode(scrollPos);
         }
@@ -299,10 +299,10 @@ let playBtn = document.getElementById('play-btn');
       } else if (isAtBottom && items.length > 0) {
         kandidatTerpilih = items[items.length - 1].getAttribute('data-index');
       } else {
-        let batasAktif = detailsContainer.scrollTop + (detailsContainer.clientHeight * 0.15); 
+        let batasAktif = detailsContainer.scrollTop + (detailsContainer.clientHeight * 0.1); 
         for (let i = 0; i < items.length; i++) {
           let item = items[i];
-          let posisiAsliItem = item.offsetTop - detailsContainer.offsetTop;
+let posisiAsliItem = item.offsetTop;
           if (posisiAsliItem <= batasAktif) {
             kandidatTerpilih = item.getAttribute('data-index');
           } else {
