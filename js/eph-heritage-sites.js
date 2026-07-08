@@ -219,11 +219,12 @@ function renderMapAndPanel() {
       
       marker.bindPopup(popupContent, { autoPan: false, minWidth: 160, maxWidth: 160 });
       
+  // Event saat Marker di Klik Direct
       marker.on('click', function() {
         hentikanPlay(); 
 
-        // TERCAPAI: Kirim parameter TRUE agar tingkat zoom kustom pilihan user tidak berubah
-        fokusKeMarker(marker.getLatLng(), true); 
+        // SEKARANG: Parameter kedua = true (tetap zoom), Parameter ketiga = true (tanpa animasi)
+        fokusKeMarker(marker.getLatLng(), true, true); 
         
         let indexStr = index.toString();
         indexAktif = indexStr; 
