@@ -344,27 +344,24 @@ let playBtn = document.getElementById('play-btn');
 function fokusKeMarker(latlng, keepCurrentZoom = false, durasi = 1.2) {
   // Jika dari klik marker langsung (true), gunakan zoom saat ini. Jika false, paksa ke 14.
   let targetZoom = keepCurrentZoom ? Map.getZoom() : 14;
+
+  // 1. JIKA DESKTOP: Tetap gunakan flyTo murni langsung ke titik koordinat asli
+  if (window.innerWidth > 800) {
+    Map.flyTo(latlng, targetZoom, {
+      animate: true,
+      duration: durasi
+    });
+    return; // Selesai untuk desktop
+  }
+
+  // 2. KHUSUS MOBILE: Kita gunakan flyToBounds dengan padding asli bawaan Leaflet
+  // Kita jadikan satu koordinat tersebut sebagai area target [latlng, latlng]
+  let areaTarget = [latlng, latlng];
   
-  let koordinatAkhir = latlng;
-
-  // KHUSUS MOBILE (Layar <= 800px): Geser target koordinat 40px ke atas
-  if (window.innerWidth <= 800) {
-    let targetPoint = Map.project(latlng, targetZoom);
-    targetPoint.y += 40; // Menambah Y piksel akan menggeser pusat peta ke bawah (marker naik 40px)
-    koordinatAkhir = Map.unproject(targetPoint, targetZoom);
-  }
-
-  let currentCenter = Map.getCenter();
-  let currentZoom = Map.getZoom();
-
-  // Logika pencegah shaky / getar jika posisi dan zoom sudah sangat pas
-  if (currentZoom === targetZoom && currentCenter.distanceTo(koordinatAkhir) < 5) {
-    return; 
-  }
-
-  // KEMBALI MENGGUNAKAN FLYTO UNTUK SEMUA INTERAKSI
-  // Jalur penerbangan melengkung akan dihitung dalam 1 gerakan utuh yang sangat smooth
-  Map.flyTo(koordinatAkhir, targetZoom, {
+  Map.flyToBounds(areaTarget, {
+    paddingTopLeft: [40, 40],
+    paddingBottomRight: [40, (window.innerHeight / 2) + 40], // Otomatis mengamankan area panel 50%
+    maxZoom: targetZoom, // Mengunci batas zoom agar tidak terlalu dekat
     animate: true,
     duration: durasi
   });
