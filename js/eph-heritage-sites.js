@@ -342,26 +342,23 @@ let playBtn = document.getElementById('play-btn');
 // FUNGSI FOKUS: GERAKAN LANGSUNG 1 LANGKAH (ANTI MEMBAL DUA KALI DI HP)
 // =========================================================================
 function fokusKeMarker(latlng, keepCurrentZoom = false, durasi = 1.2) {
-  // Jika dari klik marker langsung (true), gunakan zoom saat ini. Jika false, paksa ke 14.
-  let targetZoom = keepCurrentZoom ? Map.getZoom() : 14;
+  let targetZoom = keepCurrentZoom ? Map.getZoom() : 12;
+  let koordinatAkhir = latlng;
 
-  // 1. JIKA DESKTOP: Tetap gunakan flyTo murni langsung ke titik koordinat asli
-  if (window.innerWidth > 800) {
-    Map.flyTo(latlng, targetZoom, {
-      animate: true,
-      duration: durasi
-    });
-    return; // Selesai untuk desktop
+  if (window.innerWidth <= 800) {
+    let targetPoint = Map.project(latlng, targetZoom);
+    targetPoint.y += 40; 
+    koordinatAkhir = Map.unproject(targetPoint, targetZoom);
   }
 
-  // 2. KHUSUS MOBILE: Kita gunakan flyToBounds dengan padding asli bawaan Leaflet
-  // Kita jadikan satu koordinat tersebut sebagai area target [latlng, latlng]
-  let areaTarget = [latlng, latlng];
-  
-  Map.flyToBounds(areaTarget, {
-    paddingTopLeft: [40, 40],
-    paddingBottomRight: [40, (window.innerHeight / 2) + 40], // Otomatis mengamankan area panel 50%
-    maxZoom: targetZoom, // Mengunci batas zoom agar tidak terlalu dekat
+  let currentCenter = Map.getCenter();
+  let currentZoom = Map.getZoom();
+
+  if (currentZoom === targetZoom && currentCenter.distanceTo(koordinatAkhir) < 5) {
+    return; 
+  }
+
+  Map.flyTo(koordinatAkhir, targetZoom, {
     animate: true,
     duration: durasi
   });
