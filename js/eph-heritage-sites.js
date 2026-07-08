@@ -7,7 +7,6 @@ let isPlaying = false;
 let playInterval = null;
 let bgAudio = null;
 
-// Fungsi hentikan play mendukung banyak tombol (Desktop & Mobile)
 function hentikanPlay() {
   isPlaying = false; 
   
@@ -20,14 +19,11 @@ function hentikanPlay() {
     bgAudio.pause();
   }
 
-  // Gunakan ID desktop dan mobile
-  let playBtns = [document.getElementById('play-btn'), document.getElementById('play-btn-mobile')];
-  playBtns.forEach(btn => {
-    if (btn) {
-      // Kembalikan ke ikon PLAY
-      btn.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-    }
-  });
+  let playBtn = document.getElementById('play-btn');
+  if (playBtn) {
+    // Kembali ke ikon PLAY
+    playBtn.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  }
 }
 
 function loadPrimaryData() {
@@ -69,16 +65,14 @@ function renderMapAndPanel() {
     <div class="timeline-item" id="item--1" data-index="-1">
       <h2 class="timeline-date" style="cursor: pointer;" title="Tampilkan Semua Peta">Pengantar</h2>
       <div class="location-desc">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nanti sayangku bisa isi dengan biografi dan foto di sini ya secara manual.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nanti bisa diisi dengan biografi dan foto di sini secara manual.</p>
       </div>
     </div>
   `; 
   
   let jedaScroll = null;
   let jedaAutoScroll = null;
-  
   let indexAktif = '-1';
-  let kandidatIndexAktif = null; 
 
   hentikanPlay();
 
@@ -97,14 +91,13 @@ function renderMapAndPanel() {
     // 2. LOGIKA KETIKA ANIMASI BERAKHIR: KEMBALI KE PENGANTAR
     if (nextIdx >= TimelineRecords.length) {
       hentikanPlay();
-      indexAktif = '-1'; // Reset ke pengantar
+      indexAktif = '-1'; 
       
-      Map.closePopup(); // Tutup popup
+      Map.closePopup(); 
       if (markerBounds.length > 0) {
-        Map.fitBounds(markerBounds, { padding: [40, 40] }); // Zoom cover semua
+        Map.fitBounds(markerBounds, { padding: [40, 40] }); 
       }
       
-      // Scroll kembali ke div pengantar
       detailsContainer.classList.add('sedang-auto-scroll');
       clearTimeout(jedaAutoScroll);
       jedaAutoScroll = setTimeout(() => {
@@ -112,7 +105,7 @@ function renderMapAndPanel() {
       }, 1200); 
       detailsContainer.scrollTo({ top: 0, behavior: 'smooth' });
       
-      return; // Berhenti di sini, siap diplay lagi
+      return; 
     }    
     
     let targetRecord = TimelineRecords[nextIdx];
@@ -137,40 +130,35 @@ function renderMapAndPanel() {
     }
   }
 
-  // Dukung tombol play desktop dan mobile
-  let playBtns = [document.getElementById('play-btn'), document.getElementById('play-btn-mobile')];
-  
-  playBtns.forEach(btn => {
-    if (btn) {
-      let newPlayBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newPlayBtn, btn);
+  // Kontrol Event Listener Tunggal untuk #play-btn
+  let playBtn = document.getElementById('play-btn');
+  if (playBtn) {
+    let newPlayBtn = playBtn.cloneNode(true);
+    playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
+    playBtn = newPlayBtn;
+    
+    playBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
       
-      newPlayBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
+      if (isPlaying) {
+        hentikanPlay(); 
+      } else {
+        isPlaying = true;
+        // Ubah ke ikon PAUSE
+        playBtn.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
         
-        if (isPlaying) {
-          hentikanPlay(); 
-        } else {
-          isPlaying = true;
-          // Ubah semua tombol jadi pause
-          playBtns.forEach(b => {
-             let realBtn = document.getElementById(b.id);
-             if(realBtn) realBtn.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+        if (bgAudio) {
+          bgAudio.play().catch(function(error) {
+            console.log("Browser menahan pemutaran otomatis lagu: ", error); 
           });
-          
-          if (bgAudio) {
-            bgAudio.play().catch(function(error) {
-              console.log("Browser menahan pemutaran otomatis lagu: ", error); 
-            });
-          }
-
-          jalankanAnimasiSatuLangkah(); 
-          clearInterval(playInterval); 
-          playInterval = setInterval(jalankanAnimasiSatuLangkah, 3000); 
         }
-      });
-    }
-  });
+
+        jalankanAnimasiSatuLangkah(); 
+        clearInterval(playInterval); 
+        playInterval = setInterval(jalankanAnimasiSatuLangkah, 3000); 
+      }
+    });
+  }
 
   // ==========================================
   // RAKIT KONTEN HTML PANEL (Lanjutan)
@@ -256,7 +244,6 @@ function renderMapAndPanel() {
       
       hentikanPlay(); 
 
-      // 3. JIKA DIV PENGANTAR DIKLIK
       if (indexStr === '-1') {
         indexAktif = '-1';
         Map.closePopup();
@@ -272,7 +259,6 @@ function renderMapAndPanel() {
         detailsContainer.scrollTo({ top: 0, behavior: 'smooth' });
         
       } else {
-        // Jika Marker biasa diklik
         let index = parseInt(indexStr);
         let targetRecord = TimelineRecords[index];
 
@@ -297,10 +283,9 @@ function renderMapAndPanel() {
   });
 
   // ==========================================
-  // SCROLLTELLING (Radar Posisi Presisi)
+  // SCROLLTELLING
   // ==========================================
   detailsContainer.addEventListener('scroll', () => {
-    
     if (detailsContainer.classList.contains('sedang-auto-scroll')) return;
     
     hentikanPlay(); 
@@ -308,7 +293,6 @@ function renderMapAndPanel() {
     
     jedaScroll = setTimeout(() => {
       let batasAktif = detailsContainer.scrollTop + (detailsContainer.clientHeight * 0.15); 
-      
       let items = document.querySelectorAll('.timeline-item');
       let kandidatTerpilih = null;
 
@@ -330,7 +314,6 @@ function renderMapAndPanel() {
       if (kandidatTerpilih !== null && kandidatTerpilih !== indexAktif) {
         indexAktif = kandidatTerpilih; 
         
-        // 4. JIKA SCROLL MENCAPAI PENGANTAR (INDEX -1)
         if (indexAktif === '-1') {
           Map.closePopup();
           if (markerBounds.length > 0) {
@@ -350,9 +333,6 @@ function renderMapAndPanel() {
 
   }, { passive: true });
 
-  // ==========================================
-  // FINALIZE UI
-  // ==========================================
   document.getElementById('loading').style.display = 'none';
   detailsContainer.style.display = 'block';
 
