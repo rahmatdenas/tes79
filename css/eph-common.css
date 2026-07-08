@@ -129,12 +129,10 @@ margin: 25px;
    ========================================================================== */
 .custom-popup {
   text-align: center;
-  min-width: 160px;
 }
 
 .custom-popup img {
   width: 100%;
-  max-width: 200px;
   border-radius: 4px;
   margin-bottom: 8px;
 }
