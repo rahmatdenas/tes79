@@ -216,27 +216,23 @@ fokusKeMarker(marker.getLatLng());
 // Fungsi baru untuk fokus ke marker dengan transisi smooth dan ruang lega (offset)
 function fokusKeMarker(latlng) {
   let targetZoom = 14;
-  
-  // Mengambil tinggi elemen map di layar (sisa 50% layar)
   let mapHeight = document.getElementById('map').clientHeight;
   
-  // Hitung offset: kita ingin kamera naik sedikit agar marker berada di bawah (memberi ruang popup)
-  // Nilai 0.25 berarti menggeser sebanyak 25% dari tinggi peta. Bisa disesuaikan jika kurang pas.
+  // Kita geser titik pusat kamera sebesar 25% dari tinggi peta.
+  // Jika popup atau gambar di dalamnya cukup tinggi dan masih sedikit tertutup, 
+  // angka 0.25 ini bisa Anda naikkan menjadi 0.30 atau 0.35.
   let yOffset = mapHeight * 0.25; 
 
-  // Konversi koordinat lat/lon ke titik piksel layar pada zoom 14
   let targetPoint = Map.project(latlng, targetZoom);
   
-  // Kurangi nilai Y (titik kamera digeser ke atas, sehingga marker turun)
-  targetPoint.y -= yOffset;
+  // REVISI PENTING: Gunakan tanda PLUS (+), bukan minus (-)
+  targetPoint.y += yOffset; 
   
-  // Kembalikan piksel menjadi koordinat lat/lon baru
   let targetLatLng = Map.unproject(targetPoint, targetZoom);
 
-  // Eksekusi pergerakan kamera secara smooth (termasuk zoom in)
   Map.flyTo(targetLatLng, targetZoom, {
     animate: true,
-    duration: 1.2 // Waktu transisi dalam detik, cukup smooth dan tidak membebani render
+    duration: 1.2
   });
 }
 
