@@ -116,6 +116,10 @@
     padding: 0;
     transition: transform 0.2s;
   }
+
+#play-btn:active {
+    transform: translateY(-50%) scale(0.8); /* Efek memantul saat diklik */
+  }
   
 #details,
   #about {
