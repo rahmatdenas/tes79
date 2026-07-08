@@ -61,8 +61,12 @@ function applyTransform(y) {
     }
   };
 
-  function onTouchStart(e) {
+function onTouchStart(e) {
     if (!isMobile()) return;
+    
+    // [KUNCI BARU] Jika yang disentuh adalah tombol Play (atau ikon di dalamnya), abaikan fungsi tarik!
+    if (e.target.closest('#play-btn')) return;
+
     var touch = e.touches ? e.touches[0] : e;
     
     dragging = true;
@@ -167,6 +171,11 @@ if (detailsContainer) {
     dragHandle.addEventListener('touchmove', onTouchMove, { passive: false });
     dragHandle.addEventListener('touchend', onTouchEnd);
     dragHandle.addEventListener('touchcancel', onTouchEnd);
+   // [TAMBAHAN BARU] Event untuk header agar bisa ditarik juga
+    header.addEventListener('touchstart', onTouchStart, { passive: false });
+    header.addEventListener('touchmove', onTouchMove, { passive: false });
+    header.addEventListener('touchend', onTouchEnd);
+    header.addEventListener('touchcancel', onTouchEnd);
   });
 
   window.addEventListener('resize', handleViewportChange);
