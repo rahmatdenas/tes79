@@ -62,18 +62,16 @@ function applyTransform(y) {
   };
 
 function onTouchStart(e) {
-  if (!isMobile()) return;
-  
-  // UBAH ID NYA JADI -mobile DI SINI
-  if (e.target.closest('#play-btn-mobile')) return; 
-
-  var touch = e.touches ? e.touches[0] : e;
+    if (!isMobile()) return;
     
+    // KEMBALI MENGGUNAKAN #play-btn ASLI
+    if (e.target.closest('#play-btn')) return;
+
+    var touch = e.touches ? e.touches[0] : e;
     dragging = true;
     moved = false;
     startClientY = touch.clientY;
     startTranslate = currentY;
-    
     panel.classList.add('eph-dragging');
   }
 
@@ -138,12 +136,11 @@ if (detailsContainer) {
     }
   }
 
- window.addEventListener('load', function() {
+window.addEventListener('load', function() {
     panel = document.getElementById('panel');
     header = document.getElementById('branding');
     if (!panel || !header) return;
 
-    // 1. SUNTIKKAN DRAG HANDLE (GAGANG TIPIS) DI ATAS PANEL
     var dragHandle = document.getElementById('drag-handle');
     if (!dragHandle) {
       dragHandle = document.createElement('div');
@@ -151,32 +148,30 @@ if (detailsContainer) {
       panel.insertBefore(dragHandle, panel.firstChild);
     }
 
-    // 2. SUNTIKKAN TOMBOL PLAY MENGGANTIKAN PANEL TOGGLE (CHEVRON)
-var playBtn = document.getElementById('play-btn-mobile');
-  if (!playBtn) {
-    playBtn = document.createElement('button');
-    playBtn.id = 'play-btn-mobile'; 
-    playBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; 
-    header.appendChild(playBtn);
-  }
+    // KEMBALI MENGGUNAKAN SATU ID SAJA UNTUK DESKTOP & MOBILE
+    var playBtn = document.getElementById('play-btn');
+    if (!playBtn) {
+      playBtn = document.createElement('button');
+      playBtn.id = 'play-btn';
+      playBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; 
+      header.appendChild(playBtn);
+    }
     
-    // Hapus chevron lama jika kebetulan masih ada di HTML
     var oldToggle = document.getElementById('panel-toggle');
     if (oldToggle) oldToggle.remove();
 
     handleViewportChange();
 
-    // 3. KUNCI PERUBAHAN: DRAG HANYA BISA DARI HANDLE TIPIS
     dragHandle.addEventListener('touchstart', onTouchStart, { passive: false });
     dragHandle.addEventListener('touchmove', onTouchMove, { passive: false });
     dragHandle.addEventListener('touchend', onTouchEnd);
     dragHandle.addEventListener('touchcancel', onTouchEnd);
-   // [TAMBAHAN BARU] Event untuk header agar bisa ditarik juga
+
     header.addEventListener('touchstart', onTouchStart, { passive: false });
     header.addEventListener('touchmove', onTouchMove, { passive: false });
     header.addEventListener('touchend', onTouchEnd);
     header.addEventListener('touchcancel', onTouchEnd);
   });
-
+  
   window.addEventListener('resize', handleViewportChange);
 })();
