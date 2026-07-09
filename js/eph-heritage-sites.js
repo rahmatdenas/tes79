@@ -16,12 +16,6 @@ function hentikanPlay() {
   if (bgAudio) {
     bgAudio.pause();
   }
-  
-  // Buka kunci secara instan saat distop
-  let detailsContainer = document.getElementById('details');
-  if (detailsContainer) {
-    detailsContainer.classList.remove('sedang-auto-scroll');
-  }
 
   let playBtn = document.getElementById('play-btn');
   if (playBtn) {
@@ -225,18 +219,23 @@ let playBtn = document.getElementById('play-btn');
       `;
       marker.bindPopup(popupContent, { autoPan: false, minWidth: 160, maxWidth: 160 });
       
-      marker.on('click', function() {
+  marker.on('click', function() {
         hentikanPlay(); 
         fokusKeMarker(marker.getLatLng(), true, 0.3); 
         
         let indexStr = index.toString();
         indexAktif = indexStr; 
 
+        // Kunci kawat jebakan
+        detailsContainer.classList.add('sedang-auto-scroll');
+
         let targetItem = document.getElementById(`item-${index}`);
         if (targetItem) {
-          let scrollPos = targetItem.offsetTop - detailsContainer.offsetTop; 
+          let scrollPos = targetItem.offsetTop; 
           if (scrollPos < 0) scrollPos = 0;
-          gulirkanPanelLewatKode(scrollPos);
+          
+          // LANGSUNG GULIRKAN TANPA SETTIMEOUT 300ms LAGI
+          detailsContainer.scrollTo({ top: scrollPos, behavior: 'smooth' });
         }
       });
     }
