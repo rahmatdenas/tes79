@@ -6,6 +6,7 @@
 let isPlaying = false;
 let playInterval = null;
 let bgAudio = null;
+let scrollTimeout = null;
 
 function hentikanPlay() {
   isPlaying = false; 
@@ -114,6 +115,9 @@ function renderMapAndPanel() {
       return;
     }
     // Kunci kawat jebakan secara total
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+detailsContainer.classList.add('sedang-auto-scroll');
+    
     detailsContainer.classList.add('sedang-auto-scroll');
     detailsContainer.scrollTo({ top: posisiTarget, behavior: 'smooth' });
   }
@@ -236,6 +240,8 @@ marker.on('click', function() {
         
         let indexStr = index.toString();
         indexAktif = indexStr; 
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+detailsContainer.classList.add('sedang-auto-scroll');
 
         // Kunci kawat jebakan
         detailsContainer.classList.add('sedang-auto-scroll');
@@ -301,8 +307,15 @@ let scrollPos = parentDiv.offsetTop;
   // --------------------------------========================================
   // DETEKTOR UTAMA: MENYALAKAN KEMBALI KAWAT TEPAT SAAT SMOOTH SCROLL SELESAI
   // --------------------------------========================================
-  detailsContainer.addEventListener('scrollend', () => {
-    detailsContainer.classList.remove('sedang-auto-scroll');
+detailsContainer.addEventListener('scrollend', () => {
+    // Bersihkan antrean timer sebelumnya jika ada
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    
+    // Beri jeda 100ms. Jika dalam 100ms ada perintah klik/play lagi, 
+    // timer ini akan dibatalkan oleh event klik tersebut.
+    scrollTimeout = setTimeout(() => {
+      detailsContainer.classList.remove('sedang-auto-scroll');
+    }, 100);
   });
 
   // --------------------------------========================================
