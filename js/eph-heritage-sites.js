@@ -287,7 +287,7 @@ let observerOptions = {
   root: detailsContainer,
   // Atas 0px (menempel langsung di langit-langit kontainer)
   // Bawah -90% (memblokir 90% area bawah, menyisakan 10% di atas)
-  rootMargin: '0px 0px -90% 0px', 
+  rootMargin: '0px 0px -95% 0px', 
   threshold: 0 
 };
 
