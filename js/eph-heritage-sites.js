@@ -283,9 +283,11 @@ let scrollPos = parentDiv.offsetTop;
   
   // Konfigurasi zona deteksi (menyisakan area aktif 20% di tengah layar)
   // Sangat cocok untuk elemen div Anda yang pendek (~70px)
-  let observerOptions = {
+let observerOptions = {
     root: detailsContainer,
-    rootMargin: '-40% 0px -40% 0px', 
+    // Potong 10% saja dari atas, dan potong 80% dari bawah.
+    // Ini menggeser "Zona Sensor" ke area atas kontainer yang selalu terlihat di HP.
+    rootMargin: '-10% 0px -80% 0px', 
     threshold: 0 
   };
 
