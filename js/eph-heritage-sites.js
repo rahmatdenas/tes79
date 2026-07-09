@@ -13,8 +13,18 @@ function hentikanPlay() {
     clearInterval(playInterval);
     playInterval = null;
   }
-  if (bgAudio) {
-    bgAudio.pause();
+if (bgAudio && !bgAudio.paused) {
+    // Gunakan try-catch atau pengecekan state untuk menghindari error Promise
+    let playPromise = bgAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(_ => {
+        bgAudio.pause();
+      }).catch(error => {
+        // Abaikan error interupsi ini
+      });
+    } else {
+      bgAudio.pause();
+    }
   }
 
   let playBtn = document.getElementById('play-btn');
