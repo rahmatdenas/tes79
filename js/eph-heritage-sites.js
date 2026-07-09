@@ -337,7 +337,7 @@ detailsContainer.addEventListener('scrollend', () => {
 
 let observer = new IntersectionObserver((entries) => {
     
-    // 1. UPDATE BUKU CATATAN (WAJIB TERUS BERJALAN, JANGAN DIHALANGI)
+    // 1. UPDATE BUKU CATATAN
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         intersectingItems.add(entry.target);
@@ -346,26 +346,14 @@ let observer = new IntersectionObserver((entries) => {
       }
     });
 
-    // 2. BARU PASANG BLOKADE DI SINI (Hanya halangi eksekusi action-nya)
+    // 2. KAWAT JEBAKAN (Halangi eksekusi)
     if (detailsContainer.classList.contains('sedang-auto-scroll')) return;
 
-    // 3. Logika pencarian kandidatTerpilih ...
+    // 3. CARA BARU YANG SUPER RINGAN (Tanpa offsetTop / scrollTop)
     let kandidatTerpilih = null;
-    let lokasiGarisTarget = detailsContainer.scrollTop;
-    let maxOffsetTop = -1;
 
-    intersectingItems.forEach(item => {
-      let posisiTopItem = item.offsetTop;
-      
-      // Pilih elemen yang posisinya paling mendekati batas atas kontainer saat ini
-      if (posisiTopItem <= lokasiGarisTarget + 20 && posisiTopItem > maxOffsetTop) {
-        maxOffsetTop = posisiTopItem;
-        kandidatTerpilih = item.getAttribute('data-index');
-      }
-    });
-
-    // Antisipasi darurat jika item paling atas (Pengantar index -1) belum menyentuh hitungan offset
-    if (!kandidatTerpilih && intersectingItems.size > 0) {
+    if (intersectingItems.size > 0) {
+      // Cukup cari elemen dengan data-index paling kecil di antara yang terlihat
       let minIdx = Infinity;
       intersectingItems.forEach(item => {
         let idx = parseInt(item.getAttribute('data-index'));
@@ -376,11 +364,10 @@ let observer = new IntersectionObserver((entries) => {
       });
     }
 
-    // 4. Eksekusi perubahan marker (Logika bawaanmu, dipicu hanya jika kandidatnya benar-benar berubah)
+    // 4. Eksekusi perubahan marker (Sama persis seperti sebelumnya)
     if (kandidatTerpilih !== null && kandidatTerpilih !== indexAktif) {
       indexAktif = kandidatTerpilih; 
       
-      // Pengguna terdeteksi melakukan scroll manual, hentikan mode Play/Musik
       hentikanPlay(); 
 
       if (indexAktif === '-1') {
@@ -392,7 +379,6 @@ let observer = new IntersectionObserver((entries) => {
         let indexAngka = parseInt(indexAktif);
         let targetRecord = TimelineRecords[indexAngka];
         
-        // Buka popup dan fokuskan peta HANYA jika popup belum terbuka
         if (targetRecord && targetRecord.marker && !targetRecord.marker.isPopupOpen()) {
           targetRecord.marker.openPopup();
           fokusKeMarker(targetRecord.marker.getLatLng(), false); 
