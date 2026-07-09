@@ -82,7 +82,6 @@ function renderMapAndPanel() {
     </div>
   `; 
   
-  let jedaScroll = null;
   let indexAktif = '-1';
 
   hentikanPlay();
@@ -278,56 +277,58 @@ let scrollPos = parentDiv.offsetTop;
     detailsContainer.classList.remove('sedang-auto-scroll');
   });
 
-  // KAWAT JEBAKAN SCROLLTELLING (Hanya merespons scroll murni jari tangan user)
-  detailsContainer.addEventListener('scroll', () => {
-    // JIKA SCROLL DIPICU OLEH MARKER, KODE DI BAWAH INI AKAN DIABAIKAN TOTAL!
+  // --------------------------------========================================
+  // MESIN DETEKTOR MODERN: INTERSECTION OBSERVER (RINGAN & ANTI LAG)
+  // --------------------------------========================================
+  
+  // Konfigurasi zona deteksi (menyisakan area aktif 20% di tengah layar)
+  // Sangat cocok untuk elemen div Anda yang pendek (~70px)
+  let observerOptions = {
+    root: detailsContainer,
+    rootMargin: '-40% 0px -40% 0px', 
+    threshold: 0 
+  };
+
+  let observer = new IntersectionObserver((entries) => {
+    // ABAIKAN deteksi jika pergerakan layar sedang dikendalikan oleh sistem (Play/Klik Marker)
     if (detailsContainer.classList.contains('sedang-auto-scroll')) return;
-    
-    hentikanPlay(); 
-    clearTimeout(jedaScroll);
-    
-    jedaScroll = setTimeout(() => {
-      let items = document.querySelectorAll('.timeline-item');
-      let kandidatTerpilih = null;
 
-      let isAtBottom = detailsContainer.scrollTop + detailsContainer.clientHeight >= detailsContainer.scrollHeight - 15;
-      let isAtTop = detailsContainer.scrollTop <= 5;
+    entries.forEach(entry => {
+      // Jika elemen masuk ke zona tengah layar
+      if (entry.isIntersecting) {
+        let kandidatTerpilih = entry.target.getAttribute('data-index');
 
-      if (isAtTop) {
-        kandidatTerpilih = '-1';
-      } else if (isAtBottom && items.length > 0) {
-        kandidatTerpilih = items[items.length - 1].getAttribute('data-index');
-      } else {
-        let batasAktif = detailsContainer.scrollTop + (detailsContainer.clientHeight * 0.1); 
-        for (let i = 0; i < items.length; i++) {
-          let item = items[i];
-let posisiAsliItem = item.offsetTop;
-          if (posisiAsliItem <= batasAktif) {
-            kandidatTerpilih = item.getAttribute('data-index');
+        // Cegah eksekusi berulang jika index yang terbaca masih sama
+        if (kandidatTerpilih !== indexAktif) {
+          indexAktif = kandidatTerpilih; 
+          
+          // Pengguna terdeteksi melakukan scroll manual, hentikan mode Play/Musik
+          hentikanPlay(); 
+
+          if (indexAktif === '-1') {
+            Map.closePopup();
+            if (markerBounds.length > 0) {
+              Map.flyToBounds(markerBounds, dapatkanOpsiBounds(true));
+            }
           } else {
-            break; 
+            let indexAngka = parseInt(indexAktif);
+            let targetRecord = TimelineRecords[indexAngka];
+            
+            // Buka popup dan fokuskan peta HANYA jika popup belum terbuka
+            if (targetRecord && targetRecord.marker && !targetRecord.marker.isPopupOpen()) {
+              targetRecord.marker.openPopup();
+              fokusKeMarker(targetRecord.marker.getLatLng(), false); 
+            }
           }
         }
       }
+    });
+  }, observerOptions);
 
-      if (kandidatTerpilih !== null && kandidatTerpilih !== indexAktif) {
-        indexAktif = kandidatTerpilih; 
-        if (indexAktif === '-1') {
-          Map.closePopup();
-          if (markerBounds.length > 0) {
-            Map.flyToBounds(markerBounds, dapatkanOpsiBounds(true));
-          }
-        } else {
-          let indexAngka = parseInt(indexAktif);
-          let targetRecord = TimelineRecords[indexAngka];
-          if (targetRecord && targetRecord.marker && !targetRecord.marker.isPopupOpen()) {
-            targetRecord.marker.openPopup();
-            fokusKeMarker(targetRecord.marker.getLatLng(), false); 
-          }
-        }
-      }
-    }, 300);
-  }, { passive: true });
+  // Pasang sensor ke semua item linimasa setelah dirender
+  document.querySelectorAll('.timeline-item').forEach(item => {
+    observer.observe(item);
+  });
 
   document.getElementById('loading').style.display = 'none';
   detailsContainer.style.display = 'block';
